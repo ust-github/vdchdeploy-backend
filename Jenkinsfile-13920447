@@ -11,6 +11,7 @@ pipeline {
     stage ('Build (phkbzp)') {
       steps {
         sh script: 'mvn clean ', label: 'dwtu5j'
+        sh script: 'mvn test ', label: '6v3qdc'
         sh script: 'mvn install -Dmaven.test.skip=true', label: 'rs0v11'
       } //end steps
     } // end stage Build
