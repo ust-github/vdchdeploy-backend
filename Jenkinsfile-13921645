@@ -1,0 +1,18 @@
+pipeline {
+    agent any
+    tools {
+        maven 'maven'
+    }
+    options {
+        buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '5')
+        disableConcurrentBuilds()
+    }
+    stages {
+        stage ('Build (phkbzp)') {
+            steps {
+                sh script: 'mvn clean ', label: 'dwtu5j'
+                sh script: 'mvn install -Dmaven.test.skip=true', label: 'rs0v11'
+            } //end steps
+        } // end stage Build
+    }
+}
