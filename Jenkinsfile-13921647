@@ -1,0 +1,39 @@
+pipeline {
+    agent any
+    tools {
+        maven 'maven'
+    }
+    options {
+        buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '5')
+        disableConcurrentBuilds()
+    }
+    stages {
+        stage ('Deploy (udkjn6)') {
+            steps {
+                script {
+                    withCredentials([usernameColonPassword(credentialsId: 'nexus-registry', variable: 'REG_CREDS')]) {
+                        sh 'buildah bud --no-cache --pull --force-rm --format docker --creds ${REG_CREDS}' + " -t registry.ustpace.com/docker-sandbox/vdchdeploy-backend:latest --iidfile iid ."
+                        sh 'buildah push --rm --creds ${REG_CREDS} $(cat iid) ' + " registry.ustpace.com/docker-sandbox/vdchdeploy-backend:latest"
+                    }
+                }
+                script { sh script: 'sleep 0.005', label: 'fmw4o7'}
+
+                sh script: '''
+ln -sf /usr/local/bin/helm3 /usr/local/bin/helm
+''', label: 'rlklcw'
+                sh script: 'helm package chart', label: 'ijhrf0'
+                script { sh script: 'sleep 0.005', label: '4j2evm'}
+                withCredentials([usernameColonPassword(credentialsId: 'nexus-registry', variable: 'USERNAME_PASSWORD')]) {
+                    sh '''
+          curl -s -u ${USERNAME_PASSWORD} --fail --upload-file vdchdeploy-backend-chart-0.1.0.tgz "https://registry.ustpace.com/repository/helm-sandbox/vdchdeploy-backend-chart-0.1.0.tgz"
+      '''
+                }// end step group
+                withCredentials([   usernamePassword(credentialsId: 'nexus-registry', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                    sh script: 'helm repo add vdchdeploy-backend https://registry.ustpace.com/repository/helm-sandbox --username $USER --password $PASS', label: 'rvsu01'
+                }
+                sh script: 'helm repo update', label: 'mesfnb'
+                sh script: 'helm upgrade vdchdeploy-backend-deployment vdchdeploy-backend/vdchdeploy-backend-chart --install --values chart-values.yaml --namespace cattle-impersonation-system --set ingress.hosts[0].host=vdchdeploy-backend-cattle-impersonation-system.dagility.com', label: 'ixxrui'
+            } //end steps
+        } // end stage Deploy
+    }
+}
