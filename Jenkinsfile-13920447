@@ -18,17 +18,10 @@ pipeline {
     stage ('Deploy (udkjn6)') {
       steps {
         script {
-		docker.withTool('docker'){
-		  docker.withRegistry('https://artifactory.dagility.com', 'cacebf1e-b806-43d7-a08e-0b32122840fd'){
-        
-            sh script: '''
-docker build -t artifactory.dagility.com/docker/vdchdeploy-backend:latest .
-''', label: 'facadb'
-            sh script: '''
-docker push artifactory.dagility.com/docker/vdchdeploy-backend:latest
-''', label: 'acbdfa'
-        		}
-			}
+		      withCredentials([usernameColonPassword(credentialsId: 'nexus-registry', variable: 'REG_CREDS')]) {
+				sh 'buildah bud --no-cache --pull --force-rm --format docker --creds ${REG_CREDS}' + " -t registry.ustpace.com/docker-sandbox/vdchdeploy-backend:latest --iidfile iid ."
+				sh 'buildah push --rm --creds ${REG_CREDS} $(cat iid) ' + " registry.ustpace.com/docker-sandbox/vdchdeploy-backend:latest"
+          }
 	}
 script { sh script: 'sleep 0.005', label: 'fmw4o7'}
 
@@ -36,17 +29,14 @@ script { sh script: 'sleep 0.005', label: 'fmw4o7'}
 ln -sf /usr/local/bin/helm3 /usr/local/bin/helm
 ''', label: 'rlklcw'
         sh script: 'helm package chart', label: 'ijhrf0'
-        withCredentials([usernamePassword(credentialsId: 'cacebf1e-b806-43d7-a08e-0b32122840fd', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-
-        script {
-            sh script: '''
-curl -u$USER:$PASS -T vdchdeploy-backend-chart-0.1.0.tgz 'https://artifactory.dagility.com/artifactory/helm-local/vdchdeploy-backend-chart-0.1.0.tgz' 
-''', label: 'fdbbac'
-        } // end step group script
-script { sh script: 'sleep 0.005', label: '4j2evm'}
-} // end step group
-		withCredentials([   usernamePassword(credentialsId: 'cacebf1e-b806-43d7-a08e-0b32122840fd', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-        	sh script: 'helm repo add vdchdeploy-backend https://artifactory.dagility.com/artifactory/helm --username $USER --password $PASS', label: 'rvsu01'
+    script { sh script: 'sleep 0.005', label: '4j2evm'}
+    withCredentials([usernameColonPassword(credentialsId: 'nexus-registry', variable: 'USERNAME_PASSWORD')]) {
+      sh '''
+          curl -s -u ${USERNAME_PASSWORD} --fail --upload-file vdchdeploy-backend-chart-0.1.0.tgz "https://registry.ustpace.com/repository/helm-sandbox/vdchdeploy-backend-chart-0.1.0.tgz"
+      '''
+    }// end step group
+		withCredentials([   usernamePassword(credentialsId: 'nexus-registry', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+      sh script: 'helm repo add vdchdeploy-backend https://registry.ustpace.com/repository/helm-sandbox --username $USER --password $PASS', label: 'rvsu01'
 		}
         sh script: 'helm repo update', label: 'mesfnb'
         sh script: 'helm upgrade vdchdeploy-backend-deployment vdchdeploy-backend/vdchdeploy-backend-chart --install --values chart-values.yaml --namespace cattle-impersonation-system --set ingress.hosts[0].host=vdchdeploy-backend-cattle-impersonation-system.dagility.com', label: 'ixxrui'
