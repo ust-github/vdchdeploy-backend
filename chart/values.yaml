@@ -10,7 +10,7 @@ image:
   pullPolicy: IfNotPresent
 
 imagePullSecrets:
-  - name: artifactory
+  - name: dagility-artifactory
 nameOverride: ""
 fullnameOverride: ""
 
