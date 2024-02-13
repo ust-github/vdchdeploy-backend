@@ -1,5 +1,5 @@
 image:
-  repository: artifactory.dagility.com/docker/vdchdeploy-backend
+  repository: registry.ustpace.com/docker/vdchdeploy-backend
   tag: latest
   pullPolicy: Always
 ingress:
