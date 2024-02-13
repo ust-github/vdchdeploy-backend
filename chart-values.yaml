@@ -7,7 +7,7 @@ ingress:
   annotations:
     kubernetes.io/ingress.class: nginx-internal
   hosts:
-  - host: vdchdeploy-backend-cattle-impersonation-system.dagility.com
+  - host: vdchdeploy-backend-edgeops-keycloak.dagility.com
     paths:
     - /
 serviceAccount:
