@@ -11,7 +11,7 @@ pipeline {
         stage ('Deploy (udkjn6)') {
             steps {
                 script {
-                    withCredentials([   usernamePassword(credentialsId: 'nexus-registry', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                    withCredentials([usernameColonPassword(credentialsId: 'nexus-registry', variable: 'REG_CREDS')]) {
                         sh 'buildah bud --no-cache --pull --force-rm --format docker --creds ${REG_CREDS}' + " -t registry.ustpace.com/docker-sandbox/vdchdeploy-backend:latest --iidfile iid ."
                         sh 'buildah push --rm --creds ${REG_CREDS} $(cat iid) ' + " registry.ustpace.com/docker-sandbox/vdchdeploy-backend:latest"
                     }
