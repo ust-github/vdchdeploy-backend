@@ -1,5 +1,5 @@
 image:
-  repository: registry.ustpace.com/docker/vdchdeploy-backend
+  repository: registry.ustpace.com/docker-sandbox/vdchdeploy-backend
   tag: latest
   pullPolicy: Always
 ingress:
