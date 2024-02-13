@@ -9,8 +9,8 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 
-imagePullSecrets: 
-	-dagility-artifactory
+imagePullSecrets:
+  - name: dagility-artifactory
 nameOverride: ""
 fullnameOverride: ""
 
